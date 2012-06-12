@@ -31,11 +31,15 @@ def concatenate(path):
     files.sort()
     
     cmds = []
+    rm = []
     # Create a structure holding all files, stored by attributes
     for f in files:
         d = esg.fn_split(f)
+        if d['MIPtable'] == 'fx':
+            continue
+
         period, MIPtable, experiment, variable, model, ensemble = d.values()
-        
+
         if not F[variable][MIPtable][model][experiment].has_key(ensemble):
             F[variable][MIPtable][model][experiment][ensemble] = []
     
@@ -43,17 +47,20 @@ def concatenate(path):
         
     # Concatenate files belonging to the same simulation.
     for keys, files in F.walk():
+        if len(files) == 1:
+            continue  
+
         n1 = esg.fn_split(files[0])['period'].split('-')[0]
         n2 = esg.fn_split(files[-1])['period'].split('-')[1]
         
         d = esg.fn_split(files[0])
         d['period'] = '-'.join((n1, n2))
-        ofile = esg.fn_from(d)
+        ofile = esg.fn_from(**d)
         
-        cmd = "ncrcat " + ' '.join(files) + ' ' + ofile 
-        
-        cmds.append(cmd)
-    
+        cmds.append("ncrcat " + ' '.join(files) + ' ' + ofile )
+        rm.append("rm " + ' '.join(files))
+
+    return cmds, rm
     
 
 def monthly_clim(ifile, ofile=None, years=None):
