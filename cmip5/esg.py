@@ -35,7 +35,8 @@ Other useful parameters are
     type : File, Dataset
     format : application/solr+json or application/solr+xml (format of the return file)
 """
-import urllib, json
+import urllib, json, os
+import datetime as dt
 
 ESG_NODE = "http://pcmdi9.llnl.gov/"
 #node = r"http://www.earthsystemgrid.org/"
@@ -55,6 +56,63 @@ def search_url(latest=True, type='Dataset', format='application/solr+json', **kw
     info = r'&'.join( [r"{0}={1}".format(key, urllib.quote(val)) for key, val in kwds.items()] )
     return ESG_NODE + 'esg-search/search?' + info
     
+    
+def fn_split(fn):
+    """Return a dictionary of the file name components:
+        * variable
+        * MIP table
+        * model
+        * experiment
+        * ensemble member
+        * [period]
+        
+    Example
+    -------
+    >>> fn_split("tas_Amon_HADCM3_ historical_r1i1p1_185001-200512.nc")
+    
+
+    """
+    keys = 'variable', 'MIPtable', 'model', 'experiment', 'ensemble'
+    
+    head, tail = os.path.split(fn)
+    vals = tail.split('_')
+    
+    meta = dict(zip(keys, vals))
+    
+    if len(keys) == 6:
+        meta['period'] = os.path.splitext(vals[-1])[0]
+        
+    return meta
+    
+def fn_from(variable, MIPtable, model, experiment, ensemble, period=None, clim=False):
+    fn = "_".join((variable, MIPtable, model, experiment, ensemble))
+    if period:
+        fn = fn + "_" + period
+    
+        if clim:
+            fn = fn + "-clim"
+         
+    fn = fn + ".nc"
+    return fn
+    
+    
+def fn_date(period):
+    """Return datetime objects for the start and end instants and a 
+    boolean indicating whether or not the file is a climatological mean.
+    
+    Example
+    -------
+    fn_date("185001-200512")
+    """
+    return NotImplementedError
+    
+    vals = period.split('-')
+    n1 = dt.datetime(vals[0])
+    n2 = dt.datetime(vals[1])
+    clim =  len(vals) == 3
+    if clim:
+        assert vals[-1] == 'clim'
+    return n1, n2, clim
     
 #sock = urllib.urlopen(url)
 #return json.load(sock)
