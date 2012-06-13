@@ -68,8 +68,13 @@ def fn_split(fn):
         
     Example
     -------
-    >>> fn_split("tas_Amon_HADCM3_ historical_r1i1p1_185001-200512.nc")
-    
+    >>> fn_split("tas_Amon_HADCM3_historical_r1i1p1_185001-200512.nc")
+    {'MIPtable': 'Amon',
+     'ensemble': 'r1i1p1',
+     'experiment': ' historical',
+     'model': 'HADCM3',
+     'period': '185001-200512',
+     'variable': 'tas'}
 
     """
     keys = 'variable', 'MIPtable', 'model', 'experiment', 'ensemble'
@@ -79,7 +84,7 @@ def fn_split(fn):
     
     meta = dict(zip(keys, vals))
     
-    if len(keys) == 6:
+    if len(vals) == 6:
         meta['period'] = os.path.splitext(vals[-1])[0]
         
     return meta
@@ -102,13 +107,19 @@ def fn_date(period):
     
     Example
     -------
-    fn_date("185001-200512")
+    >>> fn_date("185001-200512")
+    (datetime.datetime(1850, 1, 1, 0, 0),
+     datetime.datetime(2005, 12, 1, 0, 0),
+     False)
+     
+    Notes
+    -----
+    Only support a single date format for now.
     """
-    return NotImplementedError
     
     vals = period.split('-')
-    n1 = dt.datetime(vals[0])
-    n2 = dt.datetime(vals[1])
+    n1 = dt.datetime.strptime(vals[0], '%Y%m')
+    n2 = dt.datetime.strptime(vals[1], '%Y%m')
     clim =  len(vals) == 3
     if clim:
         assert vals[-1] == 'clim'
