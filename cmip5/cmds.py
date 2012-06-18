@@ -64,7 +64,7 @@ def concatenate(path):
     return cmds, rm
     
 
-def monthly_clim(ifile, ofile=None, years=None):
+def monthly_clim(ifile, ofile=None, years=None, tag=''):
     """Compute the monthly climatology from a file over the specified years.
     
     The function returns a call to cdo operator ymonavg.
@@ -78,12 +78,15 @@ def monthly_clim(ifile, ofile=None, years=None):
       current directory.
     years : (y1, y2) 
       Tuple of start and end years.
-      
+    tag : str
+       Identifying tag used when generating `ofile` to identify individual 
+       periods. Useful if many climatologies are computed for the same experiment. 
+       For example, use `ctl` to refer to the 1970-1999 period. 
       
     Example
     -------
-    >>> monthly_clim('../data/sic_OImon_CCSM4_rcp85_r1i1p1_200601-210012.nc', years=(2040, 2069))
-    'cdo ymonavg -seldate,2040-01-01,2069-12-31 ../data/sic_OImon_CCSM4_rcp85_r1i1p1_200601-210012.nc sic_OImon_CCSM4_rcp85_r1i1p1_204001-206912-clim.nc'
+    >>> monthly_clim('../data/sic_OImon_CCSM4_rcp85_r1i1p1_200601-210012.nc', years=(2040, 2069), tag='<f50>')
+    'cdo ymonavg -seldate,2040-01-01,2069-12-31 ../data/sic_OImon_CCSM4_rcp85_r1i1p1_200601-210012.nc sic_OImon_CCSM4_rcp85_r1i1p1_204001-206912-clim<f50>.nc'
     
     """
     a1, a2, clim = esg.fn_date(esg.fn_split(ifile)['period'])
@@ -100,20 +103,17 @@ def monthly_clim(ifile, ofile=None, years=None):
         if years:
             d['period'] = "{0}01-{1}12".format(*years)
         
-        ofile = esg.fn_from(clim=True, **d)
+        ofile = esg.fn_from(clim='clim{0}'.format(tag), **d)
         
     if years:
         y1,y2 = years
            
         start = "{0}-01-01".format(y1)
         end = "{0}-12-31".format(y2)
-        cmd = "cdo ymonavg -seldate,{0},{1} {2} {3}".format(start, end, ifile, ofile)
+        cmd = "cdo ymonavg -f nc4 -z zip -seldate,{0},{1} {2} {3}".format(start, end, ifile, ofile)
     	
     else:
-        cmd = "cdo ymonavg {0} {1}".format(ifile, ofile)
-
-    if not os.path.exists(ifile):
-        warnings.warn("Input file does not exist: {0}".format(ifile))
+        cmd = "cdo ymonavg -f nc4 -z zip    {0} {1}".format(ifile, ofile)
 
     return cmd
 

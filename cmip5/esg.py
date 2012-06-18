@@ -137,21 +137,21 @@ def fn_split(fn):
         
     return meta
     
-def fn_from(variable, MIPtable, model, experiment, ensemble, period=None, clim=False):
+def fn_from(variable, MIPtable, model, experiment, ensemble, period=None, clim=None):
     fn = "_".join((variable, MIPtable, model, experiment, ensemble))
     if period:
         fn = fn + "_" + period
     
         if clim:
-            fn = fn + "-clim"
+            fn = fn + "-" + clim
          
     fn = fn + ".nc"
     return fn
     
     
 def fn_date(period):
-    """Return datetime objects for the start and end instants and a 
-    boolean indicating whether or not the file is a climatological mean.
+    """Return datetime objects for the start and end instants and the 
+    climatological indicator ('' if empty).  
     
     Example
     -------
@@ -168,9 +168,11 @@ def fn_date(period):
     vals = period.split('-')
     n1 = dt.datetime.strptime(vals[0], '%Y%m')
     n2 = dt.datetime.strptime(vals[1], '%Y%m')
-    clim =  len(vals) == 3
-    if clim:
-        assert vals[-1] == 'clim'
+    if len(vals) == 3:
+        clim = vals[2]
+    else:
+        clim = ''
+
     return n1, n2, clim
     
 #sock = urllib.urlopen(url)
