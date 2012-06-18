@@ -32,31 +32,79 @@ but here are the selection criteria that I find most helpful:
 Other useful parameters are 
 
     latest : true, false (to dimiss older replicas)
+    replica : true, false (set false for the master record)
     type : File, Dataset
     format : application/solr+json or application/solr+xml (format of the return file)
+    start, end : Temporal query "YYYY-MM-DDTHH:mm:ssZ"
+
+A user constraint on the start of data translates into an upper limit constraint on the data end date (start <= datetime_stop)
+A user constraint on the end of data translates into a lower limit constraint on the data start date (datestime_start <= end)
 """
-import urllib, json, os
+import urllib, json, os, inspect
 import datetime as dt
 
 ESG_NODE = "http://pcmdi9.llnl.gov/"
 #node = r"http://www.earthsystemgrid.org/"
 #node = r"http://esg-datanode.jpl.nasa.gov/"
     
+
+def _process_criteria(**kwds):
     
-def search_url(latest=True, type='Dataset', format='application/solr+json', **kwds):
+    criteria = []
+    for key, val in kwds.items():
+
+        # Convert booleans to lower-case
+        if type(val) == bool:
+            val = str(val).lower()            
+
+        # Convert to sequence
+        if not type(val) in [list, tuple]:
+            val = (val,)
+
+        # Write criteria
+        for v in val:
+            criteria.append( r"{0}={1}".format(key, urllib.quote(v)) )
+    
+    return criteria
+
+def search_url(latest=True, replica=False, type='Dataset', format='application/solr+json', **kwds):
     """Return the search URL.
     
     The keyword parameters are defined in the top module documentation.
     
+    Parameters
+    ----------
+    **kwds : key=value pairs
+      key must be a valid parameter. value may either be a string or a list of 
+      strings, in which case they are considered OR criteria. 
+
     Example
     -------
     >>> search_url(project='CMIP5', variable='tas', time_frequency='mon', experiment='rcp85')
     
     """
-    info = r'&'.join( [r"{0}={1}".format(key, urllib.quote(val)) for key, val in kwds.items()] )
+    args, varargs, kwargs, defaults = inspect.getargspec(search_url)
+
+    kwds.update(dict(zip(args, defaults)))
+
+    criteria = _process_criteria(**kwds)
+
+    # Join criteria
+    info = r'&'.join( criteria )
     return ESG_NODE + 'esg-search/search?' + info
     
-    
+
+def wget_url(latest=True, replica=False, **kwds):
+    args, varargs, kwargs, defaults = inspect.getargspec(wget_url)
+    kwds.update(dict(zip(args, defaults)))
+
+    criteria = _process_criteria(**kwds)
+
+    # Join criteria
+    info = r'&'.join( criteria )
+    return ESG_NODE + 'esg-search/wget?' + info
+
+
 def fn_split(fn):
     """Return a dictionary of the file name components:
         * variable
@@ -128,4 +176,5 @@ def fn_date(period):
 #sock = urllib.urlopen(url)
 #return json.load(sock)
 
-    
+
+

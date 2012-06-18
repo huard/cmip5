@@ -57,7 +57,8 @@ def concatenate(path):
         d['period'] = '-'.join((n1, n2))
         ofile = esg.fn_from(**d)
         
-        cmds.append("ncrcat " + ' '.join(files) + ' ' + ofile )
+#        cmds.append("ncrcat " + ' '.join(files) + ' ' + ofile )
+        cmds.append("cdo cat " + ' '.join(files) + ' ' + ofile )
         rm.append("rm " + ' '.join(files))
 
     return cmds, rm
@@ -85,7 +86,15 @@ def monthly_clim(ifile, ofile=None, years=None):
     'cdo ymonavg -seldate,2040-01-01,2069-12-31 ../data/sic_OImon_CCSM4_rcp85_r1i1p1_200601-210012.nc sic_OImon_CCSM4_rcp85_r1i1p1_204001-206912-clim.nc'
     
     """
-        
+    a1, a2, clim = esg.fn_date(esg.fn_split(ifile)['period'])
+    if clim:
+        return
+
+    r = range(a1.year,a2.year+1)
+    if years:
+        if type(years) == slice:
+            years = r[years][0], r[years][-1]
+
     if ofile is None:
         d = esg.fn_split(ifile)
         if years:
@@ -93,9 +102,9 @@ def monthly_clim(ifile, ofile=None, years=None):
         
         ofile = esg.fn_from(clim=True, **d)
         
-    
     if years:
         y1,y2 = years
+           
         start = "{0}-01-01".format(y1)
         end = "{0}-12-31".format(y2)
         cmd = "cdo ymonavg -seldate,{0},{1} {2} {3}".format(start, end, ifile, ofile)
