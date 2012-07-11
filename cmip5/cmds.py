@@ -12,6 +12,10 @@ responsible to launch those on their system.
 
 
 """
+
+# TODO: Use CDO rather than NCO to concatenate records (one dependency less).
+# TODO: Convert to nc4 and compress while concatenating. 
+
 import esg
 import os, warnings, glob
 from general import NestedDict
