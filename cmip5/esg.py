@@ -45,7 +45,7 @@ import datetime as dt
 
 ESG_NODE = "http://pcmdi9.llnl.gov/"
 #node = r"http://www.earthsystemgrid.org/"
-#node = r"http://esg-datanode.jpl.nasa.gov/"
+#ESG_NODE = r"http://esg-datanode.jpl.nasa.gov/"
     
 
 def _process_criteria(**kwds):
@@ -93,6 +93,32 @@ def search_url(latest=True, replica=False, type='Dataset', format='application/s
     info = r'&'.join( criteria )
     return ESG_NODE + 'esg-search/search?' + info
     
+def aggregation_url(latest=True, replica=False, type='Aggregation', **kwds):
+    """Return the search URL. Doesn't seem to work. 
+    
+    The keyword parameters are defined in the top module documentation.
+    
+    Parameters
+    ----------
+    **kwds : key=value pairs
+      key must be a valid parameter. value may either be a string or a list of 
+      strings, in which case they are considered OR criteria. 
+
+    Example
+    -------
+    >>> search_url(project='CMIP5', variable='tas', time_frequency='mon', experiment='rcp85')
+    
+    """
+    args, varargs, kwargs, defaults = inspect.getargspec(aggregation_url)
+
+    kwds.update(dict(zip(args, defaults)))
+
+    criteria = _process_criteria(**kwds)
+
+    # Join criteria
+    info = r'&'.join( criteria )
+    return ESG_NODE + 'esg-search/search?' + info
+
 
 def wget_url(latest=True, replica=False, **kwds):
     args, varargs, kwargs, defaults = inspect.getargspec(wget_url)
@@ -103,6 +129,48 @@ def wget_url(latest=True, replica=False, **kwds):
     # Join criteria
     info = r'&'.join( criteria )
     return ESG_NODE + 'esg-search/wget?' + info
+
+
+def prune_wget(s, start=None, end=None):
+    """Remove all files from the wget script that end before `start` and 
+    start before `end`.
+    
+    
+    Parameters
+    ----------
+    s : str
+      Wget script.
+    start : str
+      Start date in the format YYYYMM.
+    end : str
+      End date in the format YYYYMM.
+
+    Returns
+    -------
+    The same wget script with entries not satisfying the criteria 
+    removed.
+    """
+    import re
+    
+    start = start or '000000'
+    end = end or '999999'
+    
+    out = []
+    pat = re.compile("^'\w+_\w+_.+_\w+_\w+_(\d{6})-(\d{6}).nc' ")
+    for line in s.splitlines():
+        
+        m = pat.search(line)
+        if m:
+            
+            fstart, fend = m.groups()
+            if int(fend) <= int(start) or int(fstart) >= int(end):
+                continue
+            else:
+                print fstart, fend
+        out.append(line)
+    
+    return '\n'.join(out)
+
 
 
 def fn_split(fn):
