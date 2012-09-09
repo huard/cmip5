@@ -165,7 +165,7 @@ def prune_wget(s, start=None, end=None):
             fstart, fend = m.groups()
             if int(fend) <= int(start) or int(fstart) >= int(end):
                 continue
-            else:
+            
         out.append(line)
     
     return '\n'.join(out)
