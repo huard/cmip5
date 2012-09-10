@@ -13,8 +13,8 @@ responsible to launch those on their system.
 
 """
 
-# TODO: Use CDO rather than NCO to concatenate records (one dependency less).
-# TODO: Convert to nc4 and compress while concatenating. 
+# Support clim from temporarily concatenated files, so we don't have to 
+# do it for real. 
 
 import esg
 import os, warnings, glob
