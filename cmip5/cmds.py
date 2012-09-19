@@ -82,7 +82,7 @@ def concatenate(path):
     return cmds, rm
     
 
-def monthly_clim(ifile, ofile=None, years=None, tag=''):
+def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
     """Return bash commands to compute the monthly climatology from a file or 
     a sequence of files over the specified years using CDO. 
     
@@ -159,7 +159,7 @@ def monthly_clim(ifile, ofile=None, years=None, tag=''):
         ofile = esg.fn_from(clim='clim{0}'.format(tag), **d)
 
     # Create the CDO commands with or without inline concatenation.
-    cmd = ["cdo", "ymonavg", "-f", "nc4", "-z", "zip", ]
+    cmd = ["cdo", "ymonavg", options]
 
     if years:
         y1,y2 = years
