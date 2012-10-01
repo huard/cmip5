@@ -159,7 +159,7 @@ def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
         ofile = esg.fn_from(clim='clim{0}'.format(tag), **d)
 
     # Create the CDO commands with or without inline concatenation.
-    cmd = ["cdo", "ymonavg", options]
+    cmd = ["cdo", options, "ymonavg"]
 
     if years:
         y1,y2 = years
