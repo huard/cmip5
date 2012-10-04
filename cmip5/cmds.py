@@ -154,7 +154,7 @@ def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
         if years:
             d['period'] = "{0}01-{1}12".format(*years)
         else:
-            d['period'] = "{0}01-{1}12".format(start, end)
+            d['period'] = "{0}01-{1}12".format(start.year, end.year)
 
         ofile = esg.fn_from(clim='clim{0}'.format(tag), **d)
 

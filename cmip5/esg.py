@@ -217,14 +217,14 @@ def fn_from(variable, MIPtable, model, experiment, ensemble, period=None, clim=N
     
     
 def fn_date(period):
-    """Return datetime objects for the start and end instants and the 
+    """Return date objects for the start and end instants and the 
     climatological indicator ('' if empty).  
     
     Example
     -------
     >>> fn_date("185001-200512")
-    (datetime.datetime(1850, 1, 1, 0, 0),
-     datetime.datetime(2005, 12, 1, 0, 0),
+    (datetime.datetime(1850, 1, 1),
+     datetime.datetime(2005, 12, 1),
      False)
      
     Notes
@@ -233,8 +233,8 @@ def fn_date(period):
     """
     
     vals = period.split('-')
-    n1 = dt.datetime.strptime(vals[0], '%Y%m')
-    n2 = dt.datetime.strptime(vals[1], '%Y%m')
+    n1 = dt.datetime.strptime(vals[0], '%Y%m').date()
+    n2 = dt.datetime.strptime(vals[1], '%Y%m').date()
     if len(vals) == 3:
         clim = vals[2]
     else:
