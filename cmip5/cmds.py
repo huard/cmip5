@@ -63,7 +63,7 @@ def concatenate(path):
     """
 
     F = cluster_time_slices(path)
-
+    cmds = []; rm = []
     # Concatenate files belonging to the same simulation.
     for keys, files in F.walk():
         if len(files) == 1:
@@ -75,7 +75,8 @@ def concatenate(path):
         d = esg.fn_split(files[0])
         d['period'] = '-'.join((n1, n2))
         ofile = esg.fn_from(**d)
-        
+        if os.path.exists(ofile):
+            continue
         cmds.append("cdo cat " + ' '.join(files) + ' ' + ofile )
         rm.append("rm " + ' '.join(files))
 
@@ -158,7 +159,7 @@ def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
 
         ofile = esg.fn_from(clim='clim{0}'.format(tag), **d)
 
-    # Create the CDO commands with or without inline concatenation.
+    # Create the CDO commands 
     cmd = ["cdo", options, "ymonavg"]
 
     if years:

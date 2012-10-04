@@ -77,7 +77,7 @@ class NestedDict(dict):
             if o.has_key(key):
                 o = o[key]
             else:
-                raise AttributeError("This key does not exit: %s"%key)
+                raise AttributeError("This key does not exist: %s"%key)
         return o
         
     def set(self, keys, value):
