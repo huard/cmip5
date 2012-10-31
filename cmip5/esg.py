@@ -156,7 +156,7 @@ def prune_wget(s, start=None, end=None):
     end = end or '999999'
     
     out = []
-    pat = re.compile("^'\w+_\w+_.+_\w+_\w+_(\d{6})-(\d{6}).nc' ")
+    pat = re.compile("^'\w+_\w+_.+_\w+_\w+_(\d+)-(\d+).nc' ")
     for line in s.splitlines():
         
         m = pat.search(line)
