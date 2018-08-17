@@ -54,7 +54,21 @@ def cluster_time_slices(path):
 
     return F
 
+def agg_file_name(*args):
+    """Return a new file name constructed from aggregating multiple files
+    spanning consecutive periods.
+    """
 
+    if len(args) == 1:
+        return args[0]
+    else:
+        files = args
+        n1 = esg.fn_split(files[0])['period'].split('-')[0]
+        n2 = esg.fn_split(files[-1])['period'].split('-')[1]
+
+        d = esg.fn_split(files[0])
+        d['period'] = '-'.join((n1, n2))
+        return esg.fn_from(**d)
 
 def concatenate(path):
     """Return bash commands to concatenate files belonging to the same 
@@ -174,5 +188,3 @@ def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
     cmd.append(ofile)
 
     return ' '.join(cmd)
-
-    
