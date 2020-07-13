@@ -5,21 +5,21 @@ Functions to handle Earth System Grid queries
 There is some documentation on the API for queries to the ESG gateways
 on the [ESGF wiki](http://esgf.org/wiki/ESGF_Search_Service).
 
-Note: I'm just a newbie user, don't take the following too literally. 
+Note: I'm just a newbie user, don't take the following too literally.
 
-The ESGF maintains a network of gateways, ie servers running largely 
-the same software that provides access to data archived locally and 
-at the other gateways. These gateways can be queried to return the 
-set of files hosted over the entire network of gateways. 
+The ESGF maintains a network of gateways, ie servers running largely
+the same software that provides access to data archived locally and
+at the other gateways. These gateways can be queried to return the
+set of files hosted over the entire network of gateways.
 
-There are two kind of queries: search and wget. "search" returns 
-a text file containing the search results. With wget we get a 
+There are two kind of queries: search and wget. "search" returns
+a text file containing the search results. With wget we get a
 script ready (almost) to be launched to download the selected files.
 
-The syntax for these queries can be found at the links given above, 
+The syntax for these queries can be found at the links given above,
 but here are the selection criteria that I find most helpful:
 
-      Ensemble: ensemble, e.g. r1i1p1. 
+      Ensemble: ensemble, e.g. r1i1p1.
       Experiment: experiment, e.g. historical
       Model: model
       Project: project, e.g. CMIP5
@@ -28,8 +28,8 @@ but here are the selection criteria that I find most helpful:
       Time Frequency: time_frequency, e.g. mon
       Variable: variable
       Variable Long Name: variable_long_name
-   
-Other useful parameters are 
+
+Other useful parameters are
 
     latest : true, false (to dimiss older replicas)
     replica : true, false (set false for the master record)
@@ -46,16 +46,16 @@ import datetime as dt
 ESG_NODE = "http://pcmdi9.llnl.gov/"
 #node = r"http://www.earthsystemgrid.org/"
 #ESG_NODE = r"http://esg-datanode.jpl.nasa.gov/"
-    
+
 
 def _process_criteria(**kwds):
-    
+
     criteria = []
     for key, val in kwds.items():
 
         # Convert booleans to lower-case
         if type(val) == bool:
-            val = str(val).lower()            
+            val = str(val).lower()
 
         # Convert to sequence
         if not type(val) in [list, tuple]:
@@ -64,24 +64,25 @@ def _process_criteria(**kwds):
         # Write criteria
         for v in val:
             criteria.append( r"{0}={1}".format(key, urllib.quote(v)) )
-    
+
     return criteria
+
 
 def search_url(latest=True, replica=False, type='Dataset', format='application/solr+json', **kwds):
     """Return the search URL.
-    
+
     The keyword parameters are defined in the top module documentation.
-    
+
     Parameters
     ----------
     **kwds : key=value pairs
-      key must be a valid parameter. value may either be a string or a list of 
-      strings, in which case they are considered OR criteria. 
+      key must be a valid parameter. value may either be a string or a list of
+      strings, in which case they are considered OR criteria.
 
     Example
     -------
     >>> search_url(project='CMIP5', variable='tas', time_frequency='mon', experiment='rcp85')
-    
+
     """
     args, varargs, kwargs, defaults = inspect.getargspec(search_url)
 
@@ -92,22 +93,23 @@ def search_url(latest=True, replica=False, type='Dataset', format='application/s
     # Join criteria
     info = r'&'.join( criteria )
     return ESG_NODE + 'esg-search/search?' + info
-    
+
+
 def aggregation_url(latest=True, replica=False, type='Aggregation', **kwds):
-    """Return the search URL. Doesn't seem to work. 
-    
+    """Return the search URL. Doesn't seem to work.
+
     The keyword parameters are defined in the top module documentation.
-    
+
     Parameters
     ----------
     **kwds : key=value pairs
-      key must be a valid parameter. value may either be a string or a list of 
-      strings, in which case they are considered OR criteria. 
+      key must be a valid parameter. value may either be a string or a list of
+      strings, in which case they are considered OR criteria.
 
     Example
     -------
     >>> search_url(project='CMIP5', variable='tas', time_frequency='mon', experiment='rcp85')
-    
+
     """
     args, varargs, kwargs, defaults = inspect.getargspec(aggregation_url)
 
@@ -132,10 +134,10 @@ def wget_url(latest=True, replica=False, **kwds):
 
 
 def prune_wget(s, start=None, end=None):
-    """Remove all files from the wget script that end before `start` and 
+    """Remove all files from the wget script that end before `start` and
     start before `end`.
-    
-    
+
+
     Parameters
     ----------
     s : str
@@ -147,29 +149,28 @@ def prune_wget(s, start=None, end=None):
 
     Returns
     -------
-    The same wget script with entries not satisfying the criteria 
+    The same wget script with entries not satisfying the criteria
     removed.
     """
     import re
-    
+
     start = start or '000000'
     end = end or '999999'
-    
+
     out = []
     pat = re.compile("^'\w+_\w+_.+_\w+_\w+_(\d+)-(\d+).nc' ")
     for line in s.splitlines():
-        
+
         m = pat.search(line)
         if m:
-            
+
             fstart, fend = m.groups()
             if int(fend) <= int(start) or int(fstart) >= int(end):
                 continue
-            
-        out.append(line)
-    
-    return '\n'.join(out)
 
+        out.append(line)
+
+    return '\n'.join(out)
 
 
 def fn_split(fn):
@@ -180,7 +181,7 @@ def fn_split(fn):
         * experiment
         * ensemble member
         * [period]
-        
+
     Example
     -------
     >>> fn_split("tas_Amon_HADCM3_historical_r1i1p1_185001-200512.nc")
@@ -193,45 +194,46 @@ def fn_split(fn):
 
     """
     keys = 'variable', 'MIPtable', 'model', 'experiment', 'ensemble'
-    
+
     head, tail = os.path.split(fn)
     vals = tail.split('_')
-    
+
     meta = dict(zip(keys, vals))
-    
+
     if len(vals) == 6:
         meta['period'] = os.path.splitext(vals[-1])[0]
-        
+
     return meta
-    
+
+
 def fn_from(variable, MIPtable, model, experiment, ensemble, period=None, clim=None):
     fn = "_".join((variable, MIPtable, model, experiment, ensemble))
     if period:
         fn = fn + "_" + period
-    
+
         if clim:
             fn = fn + "-" + clim
-         
+
     fn = fn + ".nc"
     return fn
-    
-    
+
+
 def fn_date(period):
-    """Return date objects for the start and end instants and the 
-    climatological indicator ('' if empty).  
-    
+    """Return date objects for the start and end instants and the
+    climatological indicator ('' if empty).
+
     Example
     -------
     >>> fn_date("185001-200512")
     (datetime.datetime(1850, 1, 1),
      datetime.datetime(2005, 12, 1),
      False)
-     
+
     Notes
     -----
     Only support a single date format for now.
     """
-    
+
     vals = period.split('-')
     n1 = dt.datetime.strptime(vals[0], '%Y%m').date()
     n2 = dt.datetime.strptime(vals[1], '%Y%m').date()
@@ -241,9 +243,6 @@ def fn_date(period):
         clim = ''
 
     return n1, n2, clim
-    
-#sock = urllib.urlopen(url)
-#return json.load(sock)
 
 
 
