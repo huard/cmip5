@@ -9,7 +9,7 @@ URL = "https://github.com/huard/cmip5"
 AUTHOR = "David Huard"
 AUTHOR_EMAIL = "huard.david@ouranos.ca"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "0.2"
+VERSION = "0.3"
 LICENSE = "Apache Software License 2.0"
 
 with open("README.md") as readme_file:
