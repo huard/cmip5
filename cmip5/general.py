@@ -61,7 +61,7 @@ class NestedDict(dict):
         else:
             
             keys = []
-            for v in self.values():
+            for v in list(self.values()):
                 if isinstance(v, NestedDict):
                     keys.append(v.keylevel(level-1))
             if keys == []:
@@ -74,7 +74,7 @@ class NestedDict(dict):
         """
         o = self
         for key in keys:
-            if o.has_key(key):
+            if key in o:
                 o = o[key]
             else:
                 raise AttributeError("This key does not exist: %s"%key)
@@ -134,13 +134,13 @@ class NestedDict(dict):
         valid = subset.pop(0, None)
         
         # Prepare subset for next level.
-        subset = dict([(key-1, val) for (key, val) in subset.items()])
+        subset = dict([(key-1, val) for (key, val) in list(subset.items())])
         
         # Iterate through valid keys.
-        for key, value in self.items():
+        for key, value in list(self.items()):
             if valid is None or key in valid:
                 if type(valid) == tuple:
-                    if not set(valid).issubset(self.keys()):
+                    if not set(valid).issubset(list(self.keys())):
                         break
                 if isinstance(value, NestedDict):
                     for tup, tip in value.walk(subset):

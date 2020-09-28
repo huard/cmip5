@@ -40,7 +40,7 @@ Other useful parameters are
 A user constraint on the start of data translates into an upper limit constraint on the data end date (start <= datetime_stop)
 A user constraint on the end of data translates into a lower limit constraint on the data start date (datestime_start <= end)
 """
-import urllib, json, os, inspect
+import urllib.request, urllib.parse, urllib.error, json, os, inspect
 import datetime as dt
 
 ESG_NODE = "http://pcmdi9.llnl.gov/"
@@ -51,7 +51,7 @@ ESG_NODE = "http://pcmdi9.llnl.gov/"
 def _process_criteria(**kwds):
 
     criteria = []
-    for key, val in kwds.items():
+    for key, val in list(kwds.items()):
 
         # Convert booleans to lower-case
         if type(val) == bool:
@@ -63,7 +63,7 @@ def _process_criteria(**kwds):
 
         # Write criteria
         for v in val:
-            criteria.append( r"{0}={1}".format(key, urllib.quote(v)) )
+            criteria.append( r"{0}={1}".format(key, urllib.parse.quote(v)) )
 
     return criteria
 
@@ -86,7 +86,7 @@ def search_url(latest=True, replica=False, type='Dataset', format='application/s
     """
     args, varargs, kwargs, defaults = inspect.getargspec(search_url)
 
-    kwds.update(dict(zip(args, defaults)))
+    kwds.update(dict(list(zip(args, defaults))))
 
     criteria = _process_criteria(**kwds)
 
@@ -113,7 +113,7 @@ def aggregation_url(latest=True, replica=False, type='Aggregation', **kwds):
     """
     args, varargs, kwargs, defaults = inspect.getargspec(aggregation_url)
 
-    kwds.update(dict(zip(args, defaults)))
+    kwds.update(dict(list(zip(args, defaults))))
 
     criteria = _process_criteria(**kwds)
 
@@ -124,7 +124,7 @@ def aggregation_url(latest=True, replica=False, type='Aggregation', **kwds):
 
 def wget_url(latest=True, replica=False, **kwds):
     args, varargs, kwargs, defaults = inspect.getargspec(wget_url)
-    kwds.update(dict(zip(args, defaults)))
+    kwds.update(dict(list(zip(args, defaults))))
 
     criteria = _process_criteria(**kwds)
 
@@ -198,7 +198,7 @@ def fn_split(fn):
     head, tail = os.path.split(fn)
     vals = tail.split('_')
 
-    meta = dict(zip(keys, vals))
+    meta = dict(list(zip(keys, vals)))
 
     if len(vals) == 6:
         meta['period'] = os.path.splitext(vals[-1])[0]

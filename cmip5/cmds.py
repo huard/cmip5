@@ -44,9 +44,9 @@ def cluster_time_slices(path):
         if d['MIPtable'] == 'fx':
             continue
 
-        period, MIPtable, experiment, variable, model, ensemble = d.values()
+        period, MIPtable, experiment, variable, model, ensemble = list(d.values())
 
-        if not F[variable][MIPtable][model][experiment].has_key(ensemble):
+        if ensemble not in F[variable][MIPtable][model][experiment]:
             F[variable][MIPtable][model][experiment][ensemble] = []
 
         F[variable][MIPtable][model][experiment][ensemble].append(f)
@@ -133,15 +133,15 @@ def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
     # Check that all files belong to the same simulation.
     S = collections.defaultdict(set)
     for f in ifile:
-        for key, val in esg.fn_split(f).items():
+        for key, val in list(esg.fn_split(f).items()):
             S[key].add(val)
-    for key, val in S.items():
+    for key, val in list(S.items()):
         if len(val) > 1 and key != 'period':
             raise ValueError("Files don't all belong to the same simulation and variable.")
 
 
     # Find the start and end dates of the input files
-    starts, ends, clims = zip(*[esg.fn_date(esg.fn_split(f)['period']) for f in ifile])
+    starts, ends, clims = list(zip(*[esg.fn_date(esg.fn_split(f)['period']) for f in ifile]))
     if any(clims):
         raise ValueError("Climatology file found.")
     start, end = starts[0], ends[-1]
@@ -149,7 +149,7 @@ def monthly_clim(ifile, ofile=None, years=None, tag='', options='-f nc4'):
 
     # If years is a slice, convert to a tuple of years using the range between
     # the start and end dates.
-    r = range(start.year, end.year+1)
+    r = list(range(start.year, end.year+1))
     if years:
         if type(years) == slice:
             years = r[years][0], r[years][-1]
